@@ -1,15 +1,22 @@
 const express = require('express')
 const router = express.Router()
 
-const { findAllBooks, findBookId, createBook, deleteBook, modifyBook  } = require('../controllers/book.controller')
+const { findAllBooks, findBookId, createBook, deleteBook, modifyBook, findByWord } = require('../controllers/book.controller')
 
 const { validarCrearProducto } = require('../helpers/validator')
 
 //GET de libros
 router.get("/", async (req, res) => {
     try {
-        const libros = await findAllBooks()
-        res.json(libros)
+        let losLibros = []
+        if(req.query.contiene){
+            losLibros = await findByWord(req.query.contiene)
+        }
+        else{
+            losLibros = await findAllBooks()
+        }
+        res.json(losLibros)
+
     } catch (error) {
         // logging
         console.log(String(error))

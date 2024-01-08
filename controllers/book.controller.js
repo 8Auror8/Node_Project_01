@@ -10,6 +10,10 @@ async function findBookId(id){
     return bookFinded
 }
 
+async function findByWord(word){
+    const libros = await Book.find({title:{"$regex": word, "$options": "i"}})
+    return libros
+}
 
 async function createBook(tit, aut, pag){
     const newBook = new Book({
@@ -40,4 +44,5 @@ module.exports  = {
     createBook,
     deleteBook,
     modifyBook,
+    findByWord
 }

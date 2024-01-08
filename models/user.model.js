@@ -14,11 +14,16 @@ const userSchema = new Schema({
     email: {
         type: String,
         required: true,
+        unique: true,
     },
     password:{
         type: String,
         required: true,
     },
+    rol:{
+        type: String,
+        required: true,
+    }
 })
 
 const Users = mongoose.model("users",userSchema)

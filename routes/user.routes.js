@@ -1,14 +1,22 @@
 const express = require('express')
 const router = express.Router()
 
-const { findAllUsers, findUserId, createUser, deleteUser, modifyUser  } = require('../controllers/user.controller')
+const { findAllUsers, findUserId, createUser, deleteUser, modifyUser, login, buscarTodosPorMail, buscarUnoPorMail} = require('../controllers/user.controller')
 
-const { validarUser } = require('../helpers/uservalidator')
+/* const { validarUser } = require('../helpers/uservalidator') */
+
+const {middlewareCrearUser, middlewareEmailValidacion, estaLoggeado, esAdmin, esMailDuplicado} = require('../middlewares/usuario_middleware')
 
 //GET de users
 router.get("/", async (req, res) => {
     try {
-        const usuarios = await findAllUsers()
+        let usuarios = []
+        if(req.query.email){
+            usuarios = await buscarTodosPorMail(req.query.email)
+        }
+        else{
+            usuarios = await findAllUsers()
+        }
         res.json(usuarios)
     } catch (error) {
         // logging
@@ -30,17 +38,30 @@ router.get("/:id", async (req, res) => {
     } catch (error) {
         res.status(500).json({msg: 'error interno'+String(error)})
     }
+})
 
+//GET PERFIL
+router.get("/privado/perfil/:id", estaLoggeado, async(req, res)=>{
 
+    const usuarioEncontrado = await findUserId(req.params.id)
+
+    res.json({msg: 'bienvenido a tu perfil ' + usuarioEncontrado.email})
+})
+
+//GET ROL / GRUPOS USUARIOS
+
+router.get("/zona-admin/home", esAdmin, async(req,res)=>{
+    res.json({msg:"Hola Admin!"})
 })
 
 //POST de USER
-router.post("/", async (req, res) => {
+router.post("/", middlewareCrearUser, middlewareEmailValidacion, esMailDuplicado, async (req, res) => {
     await createUser(
         req.body.name.trim(),
         req.body.surname.trim(),
         req.body.email.trim(),
-        req.body.password)
+        req.body.password,
+        req.body.rol)
 
 
     res.json({ msg: 'Usuario creado correctamente' })
@@ -94,5 +115,18 @@ router.patch("/:id", async (req, res) => {
     res.json(encontrado === null ? { msg: 'error: User no encontrado' } : { msg: 'Usuario actualizado con PATCH correctamente!' })
 
 })
+
+//POST para hacer login
+
+router.post("/login", async(req, res)=>{
+    try{
+        const resultado = await login(req.body.email, req.body.password)
+        res.json({token: resultado.token, msg: resultado.msg})
+    }
+    catch(error){
+        res.status(500).json({msg:"error interno en el servidor"})
+    }
+})
+
 
 module.exports = router

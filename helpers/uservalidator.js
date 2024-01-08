@@ -6,10 +6,12 @@ function validarUser(body){
         || body.email === undefined
         || body.email.trim() === ""
         || body.password === undefined
-        || body.password.trim() === "") {
+        || body.password.trim() === ""
+        || body.rol === undefined
+        || body.rol.trim() === "") {
         return {
             valido: false,
-            mensaje: "falta name, surname, email o password"
+            mensaje: "falta name, surname, email, rol o password"
         }
     }
     else{

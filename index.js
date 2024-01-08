@@ -1,17 +1,21 @@
+require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const userRouter = require('./routes/user.routes')
 const bookRouter = require('./routes/book.routes')
+const pedidoRouter = require('./routes/pedido.routes')
 const mongoose = require('mongoose');
+
+
 
 const app = express()
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+app.set("secretkey", process.env.JWTSecret)
 
-
-mongoose.connect('mongodb+srv://aurzarcas:94u8yuAv8Ne42fPI@cluster0.nlps2cm.mongodb.net/Library',{
+mongoose.connect(process.env.CONNECTIONSTRING, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     })
@@ -30,4 +34,9 @@ app.use('/books',bookRouter)
 // importar usuario routes
 app.use('/users',userRouter)
 
-app.listen(3000)
+
+//para pedidos
+app.use('/pedidos', pedidoRouter)
+
+
+app.listen(process.env.PORT)
